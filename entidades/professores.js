@@ -4,7 +4,7 @@ const professorTabela = new mongoose.Schema({
     nome: String,
     email: String,
     cpf: string,
-    materia: string
+    disciplina: string
 })
 
 module.exports = mongoose.model('Professor', professorTabela);
