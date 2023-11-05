@@ -4,8 +4,8 @@ const turmaTabela = new mongoose.Schema({
     horario: String,
     diaDaSemana: String,
     capacidade: Number,
-    professor: {type: mongoose.Schema.Types.ObjectId, ref: 'Professor'},
     disciplina: {type: mongoose.Schema.Types.ObjectId, ref: 'Disciplina'},
+    professor: {type: mongoose.Schema.Types.ObjectId, ref: 'Professor'},
     alunos: [{type: mongoose.Schema.Types.ObjectId, ref: 'Aluno'}],
 })
 
