@@ -1,5 +1,5 @@
 # desafio-node-back
 
-npm install -i
+npm install 
 
 npm run start
