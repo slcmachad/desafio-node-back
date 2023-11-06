@@ -59,6 +59,7 @@ async function registerUser(req, res) {
     nome,
     email,
     cpf,
+    role: "ALUNO",
     password: passwordHash,
   });
 
