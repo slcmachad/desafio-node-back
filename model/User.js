@@ -3,7 +3,12 @@ const User = mongoose.model("User", {
     nome: String,
     email: String,
     cpf: String,
-    password: String
+    password: String,
+    role: {
+        type: String,
+        enum: ["ALUNO", "PROFESSOR"],
+        default: "ALUNO"
+    }
 })
 
 module.exports = User
