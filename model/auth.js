@@ -74,38 +74,47 @@ async function registerUser(req, res) {
 async function loginUser(req, res) {
   const { email, password } = req.body;
 
-  if (!email) {
-    return res.status(422).json({ msg: "O email é obrigatório" });
-  }
 
-  if (!password) {
-    return res.status(422).json({ msg: "A senha é obrigatória" });
-  }
-
-  // Verificar se o usuário com o email fornecido existe
-  const user = await User.findOne({ email: email });
-
-  if (!user) {
-    return res.status(404).json({ msg: "Usuário não encontrado" });
-  }
-
-  // Verificar se as senhas são compatíveis
-  const checkPassword = await bcrypt.compare(password, user.password);
-
-  if (!checkPassword) {
-    return res.status(422).json({ msg: "Senha inválida" });
+  if (!email || !password) {
+    return res.status(422).json({ msg: "O email e a senha são obrigatórios" });
   }
 
   try {
-    const secret = process.env.JWT_SECRET;
-    const token = jwt.sign({
-      id: user._id
-    }, secret);
+    // Verificar se o usuário com o email fornecido existe
+    const user = await User.findOne({ email: email });
 
+    if (!user) {
+      return res.status(404).json({ msg: "Usuário não encontrado" });
+    }
+
+    // Verificar se as senhas são compatíveis
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+    if (!checkPassword) {
+      return res.status(422).json({ msg: "Senha inválida" });
+    }
+
+    // Gerar o token JWT
+    const secret = process.env.JWT_SECRET;
+    const token = jwt.sign({ id: user._id }, secret);
+
+    // Redirecionar o usuário para a rota principal (por exemplo, '/home')
+    res.setHeader('Location', '/home');
     res.status(200).json({ msg: "Autenticado com sucesso", token });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Houve um problema, por favor, tente novamente em alguns minutos" });
+  }
+}
+
+function checkRole(role){
+  return(req, res, next) => {
+    if(req.user && req.user.role === role){
+      next()
+    } else {
+      res.status(403).json({msg: "Acesso negado, somente administradores podem acessar a pagina"})
+    }
   }
 }
 
@@ -113,4 +122,5 @@ module.exports = {
   checkToken,
   registerUser,
   loginUser,
+  checkRole
 };

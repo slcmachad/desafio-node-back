@@ -18,6 +18,8 @@ database.connect();
 // Configurar resposta JSON
 app.use(express.json());
 
+app.use(express.static('view'));
+
 // Rotas públicas
 app.get('/', (req, res) => {
   res.status(200).json({ msg: 'Bem-vindo' });
@@ -39,12 +41,22 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
     res.status(500).json({ msg: "Erro ao buscar usuário" });
   }
 });
+// Rota para a página de login
+app.get('/login', (req, res) => {
+  res.sendFile(__dirname + '/view/login.html');
+});
+
+// Rota para a página inicial (boas-vindas)
+app.get('/home', (req, res) => {
+  res.sendFile(__dirname + '/view/home.html');
+});
 
 // Registro de usuários
 app.post('/auth/register', auth.registerUser);
 
 // Login de usuários
 app.post('/auth/login', auth.loginUser);
+
 
 app.listen(process.env.PORT, () => {
   console.log("Servidor iniciado");
