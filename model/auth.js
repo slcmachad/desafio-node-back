@@ -103,8 +103,10 @@ async function loginUser(req, res) {
 
     // Redirecionar o usuário para a rota principal (por exemplo, '/home')
     res.setHeader('Authorization', `Bearer ${token}`);
+    res.status(200).json({ msg: "Autenticado com sucesso", token });
 
-    return res.redirect('/home');
+
+    //return res.redirect('/home?role=' + user.role);
 
   } catch (error) {
     console.error(error);
