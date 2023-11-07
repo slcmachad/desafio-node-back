@@ -11,7 +11,6 @@
         <button type="button" onclick="submitForm()">Login</button>
     </form>
     
-     <!-- script para efetuar o login -->
     <script>
         function submitForm() {
             const form = document.getElementById("login-form");
@@ -31,6 +30,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.msg === "Autenticado com sucesso") {
+                    // Armazenar o token JWT no localStorage
+                    localStorage.setItem('token', data.token);
+
                     // Redirecionar para a página principal
                     window.location.href = '/home';
                 } else {
