@@ -14,7 +14,9 @@ function checkToken(req, res, next) {
 
   try {
     const secret = process.env.JWT_SECRET;
-    jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret);
+
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(400).json({ msg: "Token inválido" });
@@ -114,19 +116,8 @@ async function loginUser(req, res) {
   }
 }
 
-function checkRole(role) {
-  return (req, res, next) => {
-    if (req.user && req.user.role === role) {
-      next();
-    } else {
-      res.status(403).json({ msg: "Acesso negado, somente administradores podem acessar a página" });
-    }
-  };
-}
-
 module.exports = {
   checkToken,
   registerUser,
   loginUser,
-  checkRole
 };

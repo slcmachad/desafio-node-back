@@ -1,15 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../model/auth');
- 
-router.get('/classes', auth.checkToken, auth.checkRole('PROFESSOR'), async (req, res) => {
-        //tem que colocar a logica para visualizar a turma disponivel
-        res.status(200).json({ msg: 'Bem-vindo' });
-})
 
-router.post('/criarTurmas', auth.checkToken, auth.checkRole('PROFESSOR'), async (req, res) => {
-        //tem que colocar a logica para criar turma
-        res.status(200).json({ msg: 'Bem-vindo' });
-})
+function checkProfessorRole(req, res, next) {
+        if (req.user && req.user.role === 'PROFESSOR') {
+                next();
+        } else {
+                res.status(403).json({ msg: 'Acesso negado, somente professores podem acessar a página' });
+        }
+}
+router.get('/classes', auth.checkToken, checkProfessorRole, async (req, res) => {
+        // Lógica para professores verem as turmas disponíveis
+        // ...
+        res.status(200).json({ msg: 'Bem-vindo, professor' });
+});
 
+router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res) => {
+        // Lógica para professores criarem turmas
+        // ...
+        res.status(200).json({ msg: 'Turma criada com sucesso' });
+});
+      
+      
 module.exports = router;
