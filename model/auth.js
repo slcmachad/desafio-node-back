@@ -54,13 +54,15 @@ async function registerUser(req, res) {
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
+  const role = req.body.role || 'ALUNO';
+
   // Criar usuário
   const user = new User({
     nome,
     email,
     cpf,
-    role: "ALUNO",
     password: passwordHash,
+    role: role
   });
 
   try {
@@ -100,8 +102,9 @@ async function loginUser(req, res) {
     const token = jwt.sign({ id: user._id }, secret);
 
     // Redirecionar o usuário para a rota principal (por exemplo, '/home')
-    res.setHeader('Location', '/home');
-    res.status(200).json({ msg: "Autenticado com sucesso", token });
+    res.setHeader('Authorization', `Bearer ${token}`);
+
+    return res.redirect('/home');
 
   } catch (error) {
     console.error(error);
@@ -109,14 +112,14 @@ async function loginUser(req, res) {
   }
 }
 
-function checkRole(role){
-  return(req, res, next) => {
-    if(req.user && req.user.role === role){
-      next()
+function checkRole(role) {
+  return (req, res, next) => {
+    if (req.user && req.user.role === role) {
+      next();
     } else {
-      res.status(403).json({msg: "Acesso negado, somente administradores podem acessar a pagina"})
+      res.status(403).json({ msg: "Acesso negado, somente administradores podem acessar a página" });
     }
-  }
+  };
 }
 
 module.exports = {
