@@ -82,4 +82,4 @@ app.post('/auth/login', auth.loginUser);
 //porta de entrada e iniciando o servidor
 app.listen(process.env.PORT, () => {
   console.log("Servidor iniciado");
-});
+})

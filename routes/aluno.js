@@ -2,17 +2,21 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../model/auth');
 
-// Importe a função genérica de verificação de função do usuário
-const checkUserRole = auth.checkUserRole;
+function checkAlunoRole(req, res, next) {
+    if (req.user && req.user.role === 'ALUNO') {
+        next(); // Permite o acesso se for um aluno
+    } else {
+        res.status(403).json({ msg: 'Acesso negado, somente alunos podem acessar a página' });
+    }
+}
 
-// Verifique a função do usuário usando a função genérica
-router.get('/turmas', auth.checkToken, checkUserRole('ALUNO'), async (req, res) => {
+router.get('/turmas', auth.checkToken, checkAlunoRole, async (req, res) => {
   // Lógica para alunos verem as turmas disponíveis
   // ...
   res.status(200).json({ msg: 'Bem-vindo, aluno' });
 });
 
-router.post('/matricular', auth.checkToken, checkUserRole('ALUNO'), async (req, res) => {
+router.post('/matricular', auth.checkToken, checkAlunoRole, async (req, res) => {
   // Lógica para alunos se matricularem em uma turma
   // ...
   res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
