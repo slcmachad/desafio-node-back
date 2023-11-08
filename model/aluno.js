@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../model/auth');
+const auth = require('../authenticators/auth');
 
 function checkAlunoRole(req, res, next) {
     if (req.user && req.user.role === 'ALUNO') {
@@ -13,6 +13,7 @@ function checkAlunoRole(req, res, next) {
 router.get('/turmas', auth.checkToken, checkAlunoRole, async (req, res) => {
   // Lógica para alunos verem as turmas disponíveis
   // ...
+
   res.status(200).json({ msg: 'Bem-vindo, aluno' });
 });
 

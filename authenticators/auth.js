@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('./User');
+const User = require('../model/User');
 
 
 //função para validar o token

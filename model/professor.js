@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../model/auth');
+const auth = require('../authenticators/auth');
+const Turma = require('./turma');
+const User = require('./User');
 
 function checkProfessorRole(req, res, next) {
         if (req.user && req.user.role === 'PROFESSOR') {
@@ -20,5 +22,6 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res
         // ...
         res.status(200).json({ msg: 'Turma criada com sucesso' });
 });
+
 
 module.exports = router

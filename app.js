@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 
-const database = require('./model/database');
-const auth = require('./model/auth');
+const database = require('./authenticators/database');
+const auth = require('./authenticators/auth');
 
 // Models
 const User = require('./model/User');
@@ -50,8 +50,8 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 
 
 // arquivos de rotas
-const alunosRotas = require('./routes/aluno');
-const professoresRotas = require('./routes/professor');
+const alunosRotas = require('./model/aluno');
+const professoresRotas = require('./model/professor');
 
 
 //uso das rotas
