@@ -4,13 +4,22 @@ const router = express.Router();
 const User = require('./User');
 const auth = require('../authenticators/auth');
 
+// TO DO
+// Usar ativo para o filtro dos GET
+// Fazer rota de update da disciplina
+
+
+
 const Disciplina = mongoose.model('Disciplina', {
     nome: String,
     idioma: {
         type: String,
         enum: ['Inglês', 'Espanhol'] // é possivel adicionar caso nescessario;
     },
-    descricao: String // dizer tipo Ingles I ou espanho Avançado
+    descricao: String, // dizer tipo Ingles I ou espanho Avançado
+    ativo: {
+        type: Boolean
+    }
 })
 
 function checkProfessorRole(req, res, next) {
