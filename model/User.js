@@ -6,7 +6,7 @@ const User = mongoose.model("User", {
     password: String,
     role: {
         type: String,
-        enum: ["ALUNO", "PROFESSOR"]
+        enum: ["ALUNO", "PROFESSOR"],
     }
 })
 
