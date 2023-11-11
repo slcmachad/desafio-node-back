@@ -54,7 +54,6 @@ const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
 const { router: disciplinasRotas } = require('./model/disciplina');
 
-
 //uso das rotas
 app.use('/alunos', alunosRotas);
 app.use('/professores', professoresRotas);
