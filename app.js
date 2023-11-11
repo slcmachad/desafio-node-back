@@ -52,7 +52,7 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 // arquivos de rotas
 const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
-const disciplinasRotas = require('./model/disciplina');
+const { router: disciplinasRotas } = require('./model/disciplina');
 
 //uso das rotas
 app.use('/alunos', alunosRotas);
