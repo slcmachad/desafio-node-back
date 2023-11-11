@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
-const User = require('./User');
 const auth = require('../authenticators/auth');
 
 const Disciplina = mongoose.model('Disciplina', {
@@ -25,15 +24,15 @@ const Disciplina = mongoose.model('Disciplina', {
         },
 });
 
-const checkProfessorRole = (req, res, next) => {
-    if (req.user && req.user.role === 'PROFESSOR') {
+const checkProfessorAdminRole = (req, res, next) => {
+    if (req.user && (req.user.role === 'PROFESSOR' || req.user.role === 'ADMIN')) {
         next();
     } else {
-        res.status(403).json({ msg: 'Acesso negado, somente professores podem acessar a página' });
+        res.status(403).json({ msg: 'Acesso negado, somente professores ou administradores podem acessar a página' });
     }
 };
 
-router.get('/disciplinas', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.get('/disciplinas', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try {
                 const disciplinas = await Disciplina.find({
                         ativo: req.query.ativo ? req.query.ativo === 'true' ? true : false : true
@@ -45,7 +44,7 @@ router.get('/disciplinas', auth.checkToken, checkProfessorRole, async (req, res)
         }
     });
 
-router.post('/criarDisciplina', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.post('/criarDisciplina', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
     try{
             //criando o json para a disciplina. Ela vai ser criada como ativa por default
             const {nome, idioma, descricao} = req.body;
@@ -79,7 +78,8 @@ router.post('/criarDisciplina', auth.checkToken, checkProfessorRole, async (req,
             });
             
             //salvando a disciplina e atribuindo o ID da disciplina à variável id
-            let id = await disciplina.save();
+            let disciplinaSalva = await disciplina.save();
+            let id = disciplinaSalva._id;
 
             // res.status(201).json({msg: "Disciplina criada com sucesso."});
             res.status(201).json({
@@ -92,7 +92,7 @@ router.post('/criarDisciplina', auth.checkToken, checkProfessorRole, async (req,
     }
 });
 
-router.get('/buscarDisciplina/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.get('/buscarDisciplina/:id', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try {
           const id = req.params.id;
           const disciplina = await Disciplina.findById(id);
@@ -109,7 +109,7 @@ router.get('/buscarDisciplina/:id', auth.checkToken, checkProfessorRole, async (
         }
 });
 
-router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try {
             const id = req.params.id;
             let edicao = [];
@@ -183,4 +183,4 @@ router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorRole, asyn
         }
 });
 
-module.exports = router
+module.exports = { Disciplina, router };

@@ -12,7 +12,6 @@ const auth = require('./authenticators/auth');
 // Models
 const User = require('./model/User');
 
-
 // Conexão com o banco de dados
 database.connect();
 
@@ -52,6 +51,7 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 // arquivos de rotas
 const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
+// const disciplinasRotas = require('./model/disciplina');
 const { router: disciplinasRotas } = require('./model/disciplina');
 
 //uso das rotas

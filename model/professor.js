@@ -3,16 +3,25 @@ const router = express.Router();
 const auth = require('../authenticators/auth');
 const Turma = require('./turma');
 const User = require('./User');
-const { Disciplina } = require('./disciplina');
+ const { Disciplina, router: disciplinasRotas } = require('./disciplina');
 
-function checkProfessorRole(req, res, next) {
-        if (req.user && req.user.role === 'PROFESSOR') {
-                next();
+const checkProfessorAdminRole = (req, res, next) => {
+        if (req.user && (req.user.role === 'PROFESSOR' || req.user.role === 'ADMIN')) {
+            next();
         } else {
-                res.status(403).json({ msg: 'Acesso negado, somente professores podem acessar a página' });
+            res.status(403).json({ msg: 'Acesso negado, somente professores ou administradores podem acessar a página' });
         }
-}
-router.get('/turmas', auth.checkToken, checkProfessorRole, async (req, res) => {
+};
+
+const checkProfessorRole = (req, res, next) => {
+        if (req.user && (req.user.role === 'PROFESSOR')) {
+            next();
+        } else {
+            res.status(403).json({ msg: 'Acesso negado, somente professores podem acessar a página' });
+        }
+};
+
+router.get('/turmas', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try {
                 const turmas = await Turma.find({});
                 res.status(200).json({turmas});
@@ -39,10 +48,10 @@ router.get('/minhaTurmas', auth.checkToken, checkProfessorRole, async (req, res)
         }
 });
 
-router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.post('/criarTurmas', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try{
                 //criando o json para a turma
-                const {horario, diaDaSemana, capacidade, disciplinaId, professorId, alunos} = req.body;
+                const {horario, diaDaSemana, capacidade, disciplinaId, professorId} = req.body;
 
                 //validando horario e dia
                 if(!['manha', 'tarde'].includes(horario)){
@@ -59,17 +68,13 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res
                 }
 
                 //validando as disciplinas:
-                const disciplina = await Disciplina.findById(disciplinaId);
+                const disciplina = await Disciplina.findOne({ _id: disciplinaId });
 
                 if (!disciplina) {
-                return res.status(404).json({ msg: 'Disciplina não encontrada' });
+                   return res.status(404).json({ msg: 'Disciplina não encontrada' });
                 }
 
-                
-                // validando se os alunos iniciam com 0
-                if(alunos != 0){
-                        return res.status(400).json({msg: "A turma deve iniciar com 0(Zero) alunos"});
-                }
+                const alunos = 0;
 
                 //procurando professor
                 const professor = await User.findById(professorId);
@@ -94,21 +99,20 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res
                         horario, 
                         diaDaSemana, 
                         capacidade, 
-                        disciplina: disciplina._id, 
+                        disciplina: disciplinaId, 
                         professor: professor._id, 
                         alunos
                 });
                 
                 await turma.save();
                 res.status(201).json({msg: "Turma criada com sucesso."});
-                return res.redirect('/turmas');
         }catch(erro){
                 console.error(erro);
                 res.status(500).json({msg: "Houve um problema ao criar a turma"});
         }
 });
 
-router.put('/atualizarTurma/:id', auth.checkToken, checkProfessorRole, async(req, res) => {
+router.put('/atualizarTurma/:id', auth.checkToken, checkProfessorAdminRole, async(req, res) => {
         try {
                 const turmaId = req.params.id;
                 const { horario, capacidade, disciplina } = req.body;
