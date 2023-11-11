@@ -4,10 +4,6 @@ const router = express.Router();
 const User = require('./User');
 const auth = require('../authenticators/auth');
 
-// TO DO
-// Usar ativo para o filtro dos GET
-// Fazer rota de update da disciplina
-
 const Disciplina = mongoose.model('Disciplina', {
         nome: {
           type: String,
