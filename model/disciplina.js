@@ -45,31 +45,7 @@ router.get('/disciplinas', auth.checkToken, checkProfessorRole, async (req, res)
         }
     });
 
-
-router.get('/minhaDisciplinas', auth.checkToken, checkProfessorRole, async (req, res) => {
-    try{
-            const professorId = req.user.id;
-
-            const turmas = await Turma.find({professor: professorId});
-            const disciplinas = turmas.map((turma) => {
-                return turma.disciplina;
-              });
-
-            if(disciplinas.length === 0){
-                    return res.redirect('/disciplinas');
-            }
-            
-            const ativo = req.query.ativo ? true : undefined;
-            const filtradas = disciplinas.filter((disciplina) => disciplina.ativo === ativo);
-
-            res.status(200).json({disciplinas: filtradas});
-    }catch(erro){
-            console.error(erro);
-            res.status(500).json({msg: 'Houve um problema ao carregar as disciplinas'})
-    }
-});
-
-router.post('/criarDisciplinas', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.post('/criarDisciplina', auth.checkToken, checkProfessorRole, async (req, res) => {
     try{
             //criando o json para a disciplina. Ela vai ser criada como ativa por default
             const {nome, idioma, descricao} = req.body;
@@ -116,7 +92,7 @@ router.post('/criarDisciplinas', auth.checkToken, checkProfessorRole, async (req
     }
 });
 
-router.get('/disciplinas/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.get('/buscarDisciplina/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
         try {
           const id = req.params.id;
           const disciplina = await Disciplina.findById(id);
@@ -133,7 +109,7 @@ router.get('/disciplinas/:id', auth.checkToken, checkProfessorRole, async (req, 
         }
 });
 
-router.put('/disciplinas/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
+router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorRole, async (req, res) => {
         try {
             const id = req.params.id;
             let edicao = [];
