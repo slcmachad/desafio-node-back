@@ -74,7 +74,7 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorAdminRole, async (req
                    return res.status(404).json({ msg: 'Disciplina não encontrada' });
                 }
 
-                const alunos = 0;
+                const alunos = [];
 
                 //procurando professor
                 const professor = await User.findById(professorId);

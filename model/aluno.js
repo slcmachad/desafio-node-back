@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../authenticators/auth');
+const Turma = require('./turma');
+
 
 const checkAlunoAdminRole = (req, res, next) => {
   if (req.user && (req.user.role === 'ALUNO' || req.user.role === 'ADMIN')) {
@@ -18,29 +20,61 @@ const checkAdminRole = (req, res, next) => {
   }
 };
 
-// Ler as turmas
 router.get('/turmas', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
-  const turmas = await Turma.find();
-  const turmasAutorizadas = turmas.filter(turma => turma.alunos.includes(req.user.id));
-  res.status(200).json({ turmas: turmasAutorizadas });
+  try {
+          const turmas = await Turma.find({});
+          res.status(200).json({turmas});
+  } catch (erro) {
+          console.error(erro);
+          res.status(500).json({msg: 'Houve um problema ao buscar as turmas'})
+  }
 });
 
-// cadastro de alunos
+router.get('/turmasDisponiveis', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
+  try {
+    // Busque todas as turmas
+    const turmas = await Turma.find({});
+
+    // Filtre as turmas disponíveis
+    const turmasDisponiveis = turmas.filter((turma) => {
+      return turma.capacidade > turma.alunosIds.length;
+    });
+
+    // Retorne a lista de turmas disponíveis
+    res.status(200).json({ turmasDisponiveis });
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ msg: 'Houve um problema ao buscar as turmas disponíveis' });
+  }
+});
+
+router.get('/turmasMatriculadas', auth.checkToken, async (req, res) => {
+  const turmas = await Turma.find({
+    alunosIds: { $in: [req.user.id] }
+  });
+
+  res.status(200).json({ turmas });
+});
+
+// Matrícula
 router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
   const idTurma = req.body.idTurma;
   const idAluno = req.user.id;
 
   const turma = await Turma.findById(idTurma);
+  const lotacao = turma.capacidade - turma.alunosIds.length;
 
-  const matricula = new Matricula({
-    idTurma,
-    idAluno
-  });
-
-  await matricula.save();
-
-  res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
+  if (lotacao > 0) {
+    turma.alunosIds.push(idAluno);
+    await turma.save();
+    res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
+  }
+  else {
+    res.status(500).json({ msg: 'Turma sem vaga disponível' });
+  }
 });
+
+// Não revisei nada abaixo daqui
 
 // Criar aluno 
 router.post('/', auth.checkToken, checkAdminRole, async (req, res) => {

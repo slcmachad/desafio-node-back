@@ -6,7 +6,7 @@ const Turma = mongoose.model('Turma', {
     capacidade: Number, // o maximo que terá de alunos(5)
     disciplina: String, // Aqui você pode armazenar o idioma da turma
     professor: String,  // Pode ser o ID ou outro identificador único do professor (pode auterar quando for criar o professor)
-    alunos: Number, // Quantidade máxima de alunos (atual)
+    alunosIds: [String], // Array de ids de alunos
 });
 
 module.exports = Turma;
