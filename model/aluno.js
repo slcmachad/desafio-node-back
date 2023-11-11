@@ -23,4 +23,6 @@ router.post('/matricular', auth.checkToken, checkAlunoRole, async (req, res) => 
   res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
 });
 
+router.delete('/:id')
+
 module.exports = router;

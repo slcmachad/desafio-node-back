@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../authenticators/auth');
 const Turma = require('./turma');
 const User = require('./User');
-const Disciplina = require('./disciplina')
+const { Disciplina } = require('./disciplina');
 
 function checkProfessorRole(req, res, next) {
         if (req.user && req.user.role === 'PROFESSOR') {
@@ -42,7 +42,7 @@ router.get('/minhaTurmas', auth.checkToken, checkProfessorRole, async (req, res)
 router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res) => {
         try{
                 //criando o json para a turma
-                const {horario, diaDaSemana, capacidade, idioma, professorId, alunos} = req.body;
+                const {horario, diaDaSemana, capacidade, disciplinaId, professorId, alunos} = req.body;
 
                 //validando horario e dia
                 if(!['manha', 'tarde'].includes(horario)){
@@ -58,14 +58,14 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res
                         return res.status(400).json({msg: "A capacidade deve ser um numero positivo, e não deve ter mais de 10 alunos"});
                 }
 
-                //validando se existe a disciplina com esse idioma
+                //validando as disciplinas:
+                const disciplina = await Disciplina.findById(disciplinaId);
 
-                const disciplina = await Disciplina.findOne({ nome: idioma });
-
-                if(!disciplina){
-                        return res.status(404).json({msg: 'Idioma não encontrado ou não está presente em nossa grade'})
+                if (!disciplina) {
+                return res.status(404).json({ msg: 'Disciplina não encontrada' });
                 }
 
+                
                 // validando se os alunos iniciam com 0
                 if(alunos != 0){
                         return res.status(400).json({msg: "A turma deve iniciar com 0(Zero) alunos"});
@@ -108,6 +108,32 @@ router.post('/criarTurmas', auth.checkToken, checkProfessorRole, async (req, res
         }
 });
 
-
+router.put('/atualizarTurma/:id', auth.checkToken, checkProfessorRole, async(req, res) => {
+        try {
+                const turmaId = req.params.id;
+                const { horario, capacidade, disciplina } = req.body;
+        
+                // Validar se a turma com o ID fornecido existe
+                const turmaExistente = await Turma.findById(turmaId);
+        
+                if (!turmaExistente) {
+                    return res.status(404).json({ msg: 'Turma não encontrada' });
+                }
+        
+                // Atualizar os campos da turma
+                turmaExistente.horario = horario;
+                turmaExistente.capacidade = capacidade;
+                turmaExistente.disciplina = disciplina;
+        
+                // Salvar a turma atualizada no banco de dados
+                await turmaExistente.save();
+        
+                // Retornar o objeto turmaExistente atualizado
+                res.status(200).json({ msg: 'Turma atualizada com sucesso', turma: turmaExistente });
+        } catch(erro){
+                console.error(erro);
+                res.status(500).json({ msg: 'Houve um problema ao atualizar a turma' });
+        }
+})
 
 module.exports = router
