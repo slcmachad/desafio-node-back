@@ -76,6 +76,35 @@ router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res
 
 // Não revisei nada abaixo daqui
 
+//Remover matricula
+
+router.post('/desmatricular', auth.checkToken, checkAlunoAdminRole, async(req, res) =>{
+  const idTurma = req.body.idTurma;
+  const idAluno = req.user.id;
+
+  try{
+    const turma = await Turma.findById(idTurma);
+
+    //verificação se está matriculado na turma
+    if (turma.alunosIds.includes(idAluno)){
+      //remoção de alunoIds na turma
+      turma.alunosIds = turma.alunosIds.filter((alunosId) => alunosId !== idAluno);
+
+      //atualização da turma no DB
+      await turma.save();
+
+      res.status(200).json({msg: 'Aluno desmatriculado com sucesso'});
+    }
+    else {
+      res.status(500).json({msg: 'Aluno não está matriculado nesta turma'});
+    }
+  }
+  catch (erro){
+    console.erro(erro);
+    res.status(500).json({msg:'Houve um problema ao processar a desmatrícula'});
+  }
+});
+
 // Criar aluno 
 router.post('/', auth.checkToken, checkAdminRole, async (req, res) => {
   // req.body
