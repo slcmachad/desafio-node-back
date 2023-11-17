@@ -57,54 +57,31 @@ router.get('/turmasMatriculadas', auth.checkToken, async (req, res) => {
 });
 
 // Matrícula
-router.post('/matricular/:id', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
-  const idTurma = req.params.id;
-  const idAluno = req.user.id;
-
-  const turma = await Turma.findById(idTurma);
-  const lotacao = turma.capacidade - turma.alunosIds.length;
-
-  if (lotacao > 0) {
-    turma.alunosIds.push(idAluno);
-    await turma.save();
-    res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
-  }
-  else {
-    res.status(500).json({ msg: 'Turma sem vaga disponível' });
-  }
-  if (turma.alunosIds.contains(idAluno)){
-    
-  }
-});
-
-// Não revisei nada abaixo daqui
-
-//Remover matricula
-
-router.post('/desmatricular', auth.checkToken, checkAlunoAdminRole, async(req, res) =>{
+router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
   const idTurma = req.body.idTurma;
   const idAluno = req.user.id;
 
-  try{
+  try {
     const turma = await Turma.findById(idTurma);
 
-    //verificação se está matriculado na turma
-    if (turma.alunosIds.includes(idAluno)){
-      //remoção de alunoIds na turma
+    if (turma.alunosIds.includes(idAluno)) {
       turma.alunosIds = turma.alunosIds.filter((alunosId) => alunosId !== idAluno);
-
-      //atualização da turma no DB
       await turma.save();
+      res.status(200).json({ msg: 'Aluno desmatriculado com sucesso. Matrícula realizada em seguida.' });
+    } else {
+      const lotacao = turma.capacidade - turma.alunosIds.length;
 
-      res.status(200).json({msg: 'Aluno desmatriculado com sucesso'});
+      if (lotacao > 0) {
+        turma.alunosIds.push(idAluno);
+        await turma.save();
+        res.status(200).json({ msg: 'Matrícula realizada com sucesso' });
+      } else {
+        res.status(500).json({ msg: 'Turma sem vaga disponível' });
+      }
     }
-    else {
-      res.status(500).json({msg: 'Aluno não está matriculado nesta turma'});
-    }
-  }
-  catch (erro){
-    console.erro(erro);
-    res.status(500).json({msg:'Houve um problema ao processar a desmatrícula'});
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ msg: 'Houve um problema ao processar a matrícula' });
   }
 });
 
