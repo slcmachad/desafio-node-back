@@ -56,7 +56,7 @@ async function registerUser(req, res) {
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  const role = req.body.role || '';
+  const role = req.body.role || 'ALUNO';
 
   // Criar usuário
   const user = new User({
@@ -104,8 +104,9 @@ async function loginUser(req, res) {
     const token = jwt.sign({ id: user._id, role: user.role }, secret);;
 
     // Redirecionar o usuário para a rota principal (por exemplo, '/home')
+    const id = user._id;
     res.setHeader('Authorization', `Bearer ${token}`);
-    res.status(200).json({ msg: "Autenticado com sucesso", token });
+    res.status(200).json({ msg: "Autenticado com sucesso", token, id});
 
 
     //return res.redirect('/home?role=' + user.role);

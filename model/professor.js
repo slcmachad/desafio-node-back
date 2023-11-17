@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../authenticators/auth');
 const Turma = require('./turma');
 const User = require('./User');
- const { Disciplina, router: disciplinasRotas } = require('./disciplina');
+ const { Disciplina} = require('./disciplina');
 
 const checkProfessorAdminRole = (req, res, next) => {
         if (req.user && (req.user.role === 'PROFESSOR' || req.user.role === 'ADMIN')) {

@@ -57,8 +57,8 @@ router.get('/turmasMatriculadas', auth.checkToken, async (req, res) => {
 });
 
 // Matrícula
-router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
-  const idTurma = req.body.idTurma;
+router.post('/matricular/:id', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
+  const idTurma = req.params.id;
   const idAluno = req.user.id;
 
   const turma = await Turma.findById(idTurma);
@@ -71,6 +71,9 @@ router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res
   }
   else {
     res.status(500).json({ msg: 'Turma sem vaga disponível' });
+  }
+  if (turma.alunosIds.contains(idAluno)){
+    
   }
 });
 
@@ -135,33 +138,7 @@ router.post('/', auth.checkToken, checkAdminRole, async (req, res) => {
       }
   })
 
- // Busca um aluno pelo id
-router.get('/:id',auth.checkToken, checkAlunoAdminRole,  async (req, res) =>{
-  // extraair o dado da requisição, pela url = req.params
-
-  const id = req.params.id
-
-  try {
-
-      const aluno = await Aluno.findOne({_id: id})
-      res.status(200).json(aluno)
-
-  }catch(error){
-      res.status(500).json({error: error})
-  }
-})
- 
-// Lista todos os alunos
-router.get('/',auth.checkToken,checkAdminRole,  async (req,res) => {
-  try {
-      const aluno = await Aluno.find()
-      res.status(200).json(aluno)
-  }catch(error){
-      res.status(500).json({error: error})
-  }
-})
-
-// Atualiza um aluno
+  // Atualiza um aluno
 router.patch('/:id',auth.checkToken, checkAdminRole, async (req, res) => {
 
   const id = req.params.id

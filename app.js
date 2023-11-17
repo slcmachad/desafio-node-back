@@ -1,8 +1,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -18,11 +16,6 @@ database.connect();
 
 // Configurar resposta JSON
 app.use(express.json());
-
-
-//configurar view html
-app.use(express.static('view'));
-
 
 // Rotas públicas
 app.get('/', (req, res) => {
@@ -51,6 +44,7 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 // arquivos de rotas
 const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
+
 // const disciplinasRotas = require('./model/disciplina');
 const { router: disciplinasRotas } = require('./model/disciplina');
 
@@ -58,19 +52,6 @@ const { router: disciplinasRotas } = require('./model/disciplina');
 app.use('/alunos', alunosRotas);
 app.use('/professores', professoresRotas);
 app.use('/disciplinas', disciplinasRotas);
-
-
-// Rota para a página de login
-app.get('/login', (req, res) => {
-  res.sendFile(__dirname + '/view/login.html');
-});
-
-
-// Rota para a página inicial (boas-vindas)
-app.get('/home', (req, res) => {
-  res.sendFile(__dirname + '/view/home.html');
-});
-
 
 // Registro de usuários
 app.post('/auth/register', auth.registerUser);
