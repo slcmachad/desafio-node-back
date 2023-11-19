@@ -32,7 +32,15 @@ const checkProfessorAdminRole = (req, res, next) => {
     }
 };
 
-router.get('/disciplinas', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
+const checkAdminRole = (req, res, next) => {
+    if (req.user && (req.user.role === 'ADMIN')) {
+        next();
+    } else {
+        res.status(403).json({ msg: 'Acesso negado, somente administradores podem acessar a página' });
+    }
+};
+
+router.get('/', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
         try {
                 const disciplinas = await Disciplina.find({
                         ativo: req.query.ativo ? req.query.ativo === 'true' ? true : false : true
@@ -44,7 +52,7 @@ router.get('/disciplinas', auth.checkToken, checkProfessorAdminRole, async (req,
         }
     });
 
-router.post('/criarDisciplina', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
+router.post('/criarDisciplina', auth.checkToken, checkAdminRole, async (req, res) => {
     try{
             //criando o json para a disciplina. Ela vai ser criada como ativa por default
             const {nome, idioma, descricao} = req.body;
@@ -109,7 +117,7 @@ router.get('/buscarDisciplina/:id', auth.checkToken, checkProfessorAdminRole, as
         }
 });
 
-router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorAdminRole, async (req, res) => {
+router.put('/atualizarDisciplina/:id', auth.checkToken, checkAdminRole, async (req, res) => {
         try {
             const id = req.params.id;
             let edicao = [];
@@ -181,6 +189,27 @@ router.put('/atualizarDisciplina/:id', auth.checkToken, checkProfessorAdminRole,
             console.error(erro);
             res.status(500).json({msg: "Houve um problema ao atualizar a disciplina"});
         }
+});
+
+router.delete('/excluirDisciplina/:id', auth.checkToken, checkAdminRole, async (req, res) => {
+    try {
+        const disciplinaId = req.params.id;
+
+        // Verifique se a disciplina com o ID fornecido existe
+        const disciplinaExistente = await Disciplina.findById(disciplinaId);
+
+        if (!disciplinaExistente) {
+            return res.status(404).json({ msg: 'Disciplina não encontrada' });
+        }
+
+        // Remova a disciplina do banco de dados
+        await disciplinaExistente.remove();
+
+        res.status(200).json({ msg: 'Disciplina excluída com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Houve um problema ao excluir a disciplina' });
+    }
 });
 
 module.exports = { Disciplina, router };

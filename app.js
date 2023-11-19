@@ -44,6 +44,7 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 // arquivos de rotas
 const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
+const rotasAdm = require('./model/admin')
 
 // const disciplinasRotas = require('./model/disciplina');
 const { router: disciplinasRotas } = require('./model/disciplina');
@@ -52,13 +53,14 @@ const { router: disciplinasRotas } = require('./model/disciplina');
 app.use('/alunos', alunosRotas);
 app.use('/professores', professoresRotas);
 app.use('/disciplinas', disciplinasRotas);
+app.use('/admin', rotasAdm);
 
 // Registro de usuários
-app.post('/auth/register', auth.registerUser);
+app.post('/register', auth.registerUser);
 
 
 // Login de usuários
-app.post('/auth/login', auth.loginUser);
+app.post('/login', auth.loginUser);
 
 
 //porta de entrada e iniciando o servidor

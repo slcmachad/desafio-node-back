@@ -16,6 +16,11 @@ function checkToken(req, res, next) {
     const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);
 
+    // Verificar se req.user está definido
+    if (!decoded || !decoded.role) {
+      return res.status(401).json({ msg: "Acesso negado, token inválido" });
+    }
+    
     req.user = decoded;
     next();
   } catch (error) {
@@ -29,47 +34,106 @@ async function registerUser(req, res) {
 
   // Validações
 
-  if (!nome) {
-    return res.status(422).json({ msg: "O nome é obrigatório" });
+  const camposObrigatorios = [
+    { campo: nome, msg: "O nome é obrigatório" },
+    { campo: email, msg: "O email é obrigatório" },
+    { campo: cpf, msg: "O cpf é obrigatório" },
+    { campo: password, msg: "A senha é obrigatória" },
+  ];
+  
+  for (const campo of camposObrigatorios) {
+    if (!campo.campo) {
+      return res.status(422).json({ msg: campo.msg });
+    }
   }
-  if (!email) {
-    return res.status(422).json({ msg: "O email é obrigatório" });
-  }
-  if (!cpf) {
-    return res.status(422).json({ msg: "O cpf é obrigatório" });
-  }
-  if (!password) {
-    return res.status(422).json({ msg: "A senha é obrigatória" });
-  }
+  
   if (password !== confirmPassword) {
     return res.status(422).json({ msg: "As senhas devem ser idênticas" });
   }
+  
 
-  // Verificar se já existe um usuário com o mesmo CPF
-  const userExists = await User.findOne({ cpf: cpf });
+  // Verificar se já existe um usuário com o mesmo CPF ou email
+  const userExists = await User.findOne({ cpf: cpf});
+  const userExiste = await User.findOne({ email: email });
 
-  if (userExists) {
-    return res.status(422).json({ msg: "Usuário já cadastrado com esse CPF" });
+  if (userExists || userExiste) {
+    return res.status(422).json({ msg: "Usuário já cadastrado com esse CPF ou EMAIL" });
   }
 
   // Criar a senha
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  const role = req.body.role || 'ALUNO';
-
-  // Criar usuário
+  // Criar usuário com role ALUNO
   const user = new User({
     nome,
     email,
     cpf,
     password: passwordHash,
-    role: role
+    role: 'ALUNO'
   });
 
   try {
     await user.save();
-    res.status(201).json({ msg: "Usuário cadastrado com sucesso" });
+    res.status(201).json({ msg: "Usuário ALUNO cadastrado com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Houve um problema, por favor, tente novamente em alguns minutos" });
+  }
+}
+
+// Função para registrar professores (requer ADMIN)
+async function registerProfessor(req, res) {
+  const { nome, email, cpf, password, confirmPassword, role } = req.body;
+
+  // Validações
+  const camposObrigatorios = [
+    { campo: nome, msg: "O nome é obrigatório" },
+    { campo: email, msg: "O email é obrigatório" },
+    { campo: cpf, msg: "O cpf é obrigatório" },
+    { campo: password, msg: "A senha é obrigatória" },
+    { campo: confirmPassword, msg: "A confirmação de senha é obrigatória" },
+    { campo: role, msg: "A role é obrigatória" },
+  ];
+
+  for (const campo of camposObrigatorios) {
+    if (!campo.campo) {
+      return res.status(422).json({ msg: campo.msg });
+    }
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(422).json({ msg: "As senhas devem ser idênticas" });
+  }
+
+  // Verificar se o usuário logado tem a role de ADMIN
+  if (req.user.role !== 'ADMIN') {
+    return res.status(403).json({ msg: 'Acesso negado, somente administradores podem acessar esta função' });
+  }
+
+  // Verificar se já existe um usuário com o mesmo CPF ou email
+  const userExists = await User.findOne({ cpf, email });
+
+  if (userExists) {
+    return res.status(422).json({ msg: "Usuário já cadastrado com esse CPF ou email" });
+  }
+
+  // Criar a senha
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
+
+  // Criar usuário com a role especificada
+  const user = new User({
+    nome,
+    email,
+    cpf,
+    password: passwordHash,
+    role
+  });
+
+  try {
+    await user.save();
+    res.status(201).json({ msg: `Usuário ${role} cadastrado com sucesso` });
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Houve um problema, por favor, tente novamente em alguns minutos" });
@@ -121,4 +185,5 @@ module.exports = {
   checkToken,
   registerUser,
   loginUser,
+  registerProfessor
 };

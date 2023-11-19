@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../authenticators/auth');
 const Turma = require('./turma');
+const User = require('./User');
 
 
 const checkAlunoAdminRole = (req, res, next) => {
@@ -9,14 +10,6 @@ const checkAlunoAdminRole = (req, res, next) => {
       next();
   } else {
       res.status(403).json({ msg: 'Acesso negado, somente alunos ou administradores podem acessar a página' });
-  }
-};
-
-const checkAdminRole = (req, res, next) => {
-  if (req.user && req.user.role === 'ADMIN') {
-      next();
-  } else {
-      res.status(403).json({ msg: 'Acesso negado, somente administradores podem acessar a página' });
   }
 };
 
@@ -48,7 +41,7 @@ router.get('/turmasDisponiveis', auth.checkToken, checkAlunoAdminRole, async (re
   }
 });
 
-router.get('/turmasMatriculadas', auth.checkToken, async (req, res) => {
+router.get('/turmasMatriculadas/:id', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
   const turmas = await Turma.find({
     alunosIds: { $in: [req.user.id] }
   });
@@ -57,8 +50,8 @@ router.get('/turmasMatriculadas', auth.checkToken, async (req, res) => {
 });
 
 // Matrícula
-router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
-  const idTurma = req.body.idTurma;
+router.post('/matricular/:id', auth.checkToken, checkAlunoAdminRole, async (req, res) => {
+  const idTurma = req.params.id;
   const idAluno = req.user.id;
 
   try {
@@ -85,38 +78,8 @@ router.post('/matricular', auth.checkToken, checkAlunoAdminRole, async (req, res
   }
 });
 
-// Criar aluno 
-router.post('/', auth.checkToken, checkAdminRole, async (req, res) => {
-  // req.body
-  const {nome, email, cpf} = req.body
-  const aluno ={
-    nome,
-    email,
-    cpf
-  }
-  try {
-    await Aluno.create(aluno)
-
-    res.status(201).json({message: 'Aluno criado com sucesso'})
-
-    } catch(error){
-        res.status(500).json({error: error})
-    }
-    })
-
-     // Read - leitura de dados
-  router.get('/', auth.checkToken, checkAlunoAdminRole,  async (req,res) => {
-    try {
-          const aluno = await Aluno.find()
-
-          res.status(200).json(aluno)
-    }catch(error){
-          res.status(500).json({error: error})
-      }
-  })
-
   // Atualiza um aluno
-router.patch('/:id',auth.checkToken, checkAdminRole, async (req, res) => {
+router.patch('/:id',auth.checkToken, checkAlunoAdminRole, async (req, res) => {
 
   const id = req.params.id
 
@@ -130,7 +93,7 @@ router.patch('/:id',auth.checkToken, checkAdminRole, async (req, res) => {
 
   try {
 
-      const updatedAluno = await Aluno.updateOne({_id: id}, aluno)
+      const updatedAluno = await User.updateOne({_id: id}, aluno)
 
       if(updatedAluno.matchedCount === 0){
           res.status(422).json({message: 'O usuário não foi encontrado!'})
@@ -145,10 +108,10 @@ router.patch('/:id',auth.checkToken, checkAdminRole, async (req, res) => {
 })
 
 // Deleta um aluno
-router.delete('/:id',auth.checkToken, checkAdminRole, async(req,res)=> {
+router.delete('/:id',auth.checkToken, checkAlunoAdminRole, async(req,res)=> {
   const id = req.params.id
   
-  const aluno = await Aluno.findOne({_id: id})
+  const aluno = await User.findOne({_id: id})
   
   if(!aluno){
     res.status(422).json({message: 'O aluno não foi encontrado! '})
@@ -156,7 +119,7 @@ router.delete('/:id',auth.checkToken, checkAdminRole, async(req,res)=> {
   }
   
   try {
-    await Aluno.deleteOne({_id: id})
+    await User.deleteOne({_id: id})
     
     res.status(200).json({message: 'Aluno removido com sucesso!'})
 
