@@ -13,7 +13,6 @@ const User = require('./model/User');
 // Conexão com o banco de dados
 database.connect();
 
-
 // Configurar resposta JSON
 app.use(express.json());
 
@@ -45,8 +44,6 @@ app.get("/users/:id", auth.checkToken, async (req, res) => {
 const alunosRotas = require('./model/aluno');
 const professoresRotas = require('./model/professor');
 const rotasAdm = require('./model/admin')
-
-// const disciplinasRotas = require('./model/disciplina');
 const { router: disciplinasRotas } = require('./model/disciplina');
 
 //uso das rotas
